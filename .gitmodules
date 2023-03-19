@@ -1,0 +1,6 @@
+[submodule "ARK-Server-API"]
+	path = ARK-Server-API
+	url = https://github.com/ServersHub/Framework-ArkServerApi.git
+[submodule "MoarPtr"]
+	path = MoarPtr
+	url = https://github.com/SubstituteR/MoarPtr.git
