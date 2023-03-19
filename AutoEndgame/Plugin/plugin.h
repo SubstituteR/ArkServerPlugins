@@ -53,14 +53,14 @@ namespace AutoEndgame
 		std::unordered_set<std::string> generalizedAchievementTagGrants = {};
 	};
 
-	static void from_json(const json& json, DefeatedBoss& defeatedBoss)
+	static auto from_json(const json& json, DefeatedBoss& defeatedBoss) -> void
 	{
 		json.at("Boss").get_to(defeatedBoss.Boss);
 		json.at("Blueprint").get_to(defeatedBoss.Blueprint);
 		json.at("Difficulty").get_to(defeatedBoss.Difficulty);
 	}
 
-	static void from_json(const json& json, Config& config)
+	static auto from_json(const json& json, Config& config) -> void
 	{
 		json.at("ChibiLevels").get_to(config.chibiLevels);
 		json.at("DefeatedBosses").get_to(config.defeatedBosses);
@@ -237,7 +237,7 @@ namespace AutoEndgame
 			ProcessCharacterImplant(playerController);
 		}
 
-		static void LoadConfig()
+		static auto LoadConfig() -> void
 		{
 			config = ReadJSON("ArkApi/Plugins/AutoEndgame/config.json").get<Config>();
 		}
@@ -256,7 +256,7 @@ namespace AutoEndgame
 		}
 
 	public:
-		static bool Enable()
+		static auto Enable() -> bool
 		{
 			try { LoadConfig(); }
 			catch (std::exception& e) { Log::GetLog()->error("Load Error: {}", e.what()); }
@@ -268,7 +268,8 @@ namespace AutoEndgame
 			API::Timer::Get().DelayExecute(CacheRuntimeData, 0);
 			return true;
 		}
-		static bool Disable()
+
+		static auto Disable() -> bool
 		{
 			ArkApi::GetHooks().DisableHook("AShooterGameMode.StartNewShooterPlayer", onStartNewShooterPlayer);
 			ArkApi::GetCommands().RemoveConsoleCommand("AutoEndgame.Reload");
