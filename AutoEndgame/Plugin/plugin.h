@@ -239,7 +239,7 @@ namespace AutoEndgame
 
 		static void LoadConfig()
 		{
-			config = ReadJSON("ArkApi/Plugins/ArkAutoBosses/config.json").get<Config>();
+			config = ReadJSON("ArkApi/Plugins/AutoEndgame/config.json").get<Config>();
 		}
 
 		static void ReloadConfigCommand(APlayerController* player_controller, FString*, bool)
