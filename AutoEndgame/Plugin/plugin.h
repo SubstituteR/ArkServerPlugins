@@ -8,7 +8,7 @@
 #include <Timer.h>
 #include "json.hpp"
 
-namespace ArkAutoBosses
+namespace AutoEndgame
 {
 	using json = nlohmann::json;
 
@@ -39,7 +39,7 @@ namespace ArkAutoBosses
 		}
 		struct Hash
 		{
-			[[nodiscard]] auto operator()(ArkAutoBosses::DefeatedBoss const& a) const noexcept { return std::hash<std::string>{}(a.Boss + a.Blueprint + std::to_string(a.Difficulty)); }
+			[[nodiscard]] auto operator()(AutoEndgame::DefeatedBoss const& a) const noexcept { return std::hash<std::string>{}(a.Boss + a.Blueprint + std::to_string(a.Difficulty)); }
 		};
 	};
 
@@ -237,13 +237,32 @@ namespace ArkAutoBosses
 			ProcessCharacterImplant(playerController);
 		}
 
+		static void LoadConfig()
+		{
+			config = ReadJSON("ArkApi/Plugins/ArkAutoBosses/config.json").get<Config>();
+		}
+
+		static void ReloadConfigCommand(APlayerController* player_controller, FString*, bool)
+		{
+			AShooterPlayerController* shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+			try { LoadConfig(); }
+			catch (const std::exception& error)
+			{
+				ArkApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, "Failed to reload config.");
+				Log::GetLog()->error(error.what());
+				return;
+			}
+			ArkApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Reloaded config.");
+		}
+
 	public:
 		static bool Enable()
 		{
-			try { config = ReadJSON("ArkApi/Plugins/ArkAutoBosses/config.json").get<Config>();  }
+			try { LoadConfig(); }
 			catch (std::exception& e) { Log::GetLog()->error("Load Error: {}", e.what()); }
-
 			StartNewShooterPlayer.reset(reinterpret_cast<decltype(StartNewShooterPlayer)::element_type*>(GetAddress("AShooterGameMode.StartNewShooterPlayer"))); //Ugly work-around to ensure internal addreses are consistent.
+			
+			ArkApi::GetCommands().AddConsoleCommand("AutoEndgame.Reload", ReloadConfigCommand);
 			ArkApi::GetHooks().SetHook("AShooterGameMode.StartNewShooterPlayer", onStartNewShooterPlayer, StartNewShooterPlayer.mut());
 
 			API::Timer::Get().DelayExecute(CacheRuntimeData, 0);
@@ -252,6 +271,7 @@ namespace ArkAutoBosses
 		static bool Disable()
 		{
 			ArkApi::GetHooks().DisableHook("AShooterGameMode.StartNewShooterPlayer", onStartNewShooterPlayer);
+			ArkApi::GetCommands().RemoveConsoleCommand("AutoEndgame.Reload");
 			StartNewShooterPlayer.release();
 			return true;
 		}
